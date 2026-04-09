@@ -1,13 +1,27 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Setup the web page look
-st.set_page_config(page_title="Neodocs AI Health Assistant", page_icon="💧", layout="centered")
+# 1. PAGE CONFIGURATION (Must be the first Streamlit command)
+st.set_page_config(page_title="Neodocs Health Assistant", page_icon="🩸", layout="wide")
 
-st.title("🩺 Neodocs AI Assistant")
-st.markdown("Welcome! I can help you understand your health, suggest Neodocs kits, or connect you with an expert.")
+# 2. SIDEBAR BRANDING
+with st.sidebar:
+    st.title("🩸 Neodocs")
+    st.markdown("### Your Pocket Health Expert")
+    st.markdown("Track your wellness instantly with our smart smartphone-based test kits.")
+    st.divider()
+    st.markdown("**Popular Kits:**")
+    st.markdown("- 💧 Hydration & Kidney")
+    st.markdown("- 🍎 Wellness & Nutrition")
+    st.markdown("- 🤰 Pregnancy Care")
+    st.divider()
+    st.info("⚠️ **Disclaimer:** This AI prototype is for informational purposes only and does not replace professional medical advice.")
 
-# Securely pull the API key
+# 3. MAIN CHAT HEADER
+st.title("🩺 NeoBot: AI Health Assistant")
+st.markdown("Describe how you are feeling, or ask about our test kits!")
+
+# 4. SECURE API CONNECTION
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
@@ -15,38 +29,45 @@ except KeyError:
     st.error("API Key missing! Please add it to the Streamlit secrets.")
     st.stop()
 
-# The "Brain" Instructions - Edit these links before showing Pratik!
-system_prompt = """You are the official AI assistant for Neodocs. 
-You are empathetic, professional, and speak whatever language the user speaks.
-Your goals:
-1. Understand their symptoms and suggest relevant Neodocs urine or blood test kits.
-2. If they need a tutorial on how to use a kit, give them this link: https://youtube.com/neodocs-tutorial
-3. If they want to speak to an expert, give them this booking link: https://calendly.com/your-name/neodocs-expert
-4. If they ask for blogs, provide: https://neodocs.in/blogs
-Always remind users that you are an AI, not a doctor."""
+# 5. UPGRADED SYSTEM PROMPT (The "Smarter" Brain)
+system_prompt = """You are NeoBot, the official, highly professional AI health assistant for Neodocs. 
+Always reply in the exact language the user speaks.
 
-# Initialize the AI Model
+CORE RULES:
+1. Empathy & Speed: Be extremely warm, concise, and get straight to the point.
+2. Formatting: ALWAYS use bullet points and bold text to make your answers highly readable. Do not write long walls of text.
+3. The Pivot: After addressing the user's symptom, ALWAYS recommend a relevant Neodocs urine test kit to help them track their biomarkers. 
+4. Call to Action: Provide these exact links when relevant:
+   - To buy a kit: https://neodocs.in/shop
+   - To book an expert: https://calendly.com/neodocs-expert
+   - Tutorial video: https://youtube.com/neodocs-tutorial
+5. Boundaries: You are an AI. If a user describes a severe emergency, tell them to visit a hospital immediately."""
+
+# 6. INITIALIZE AI MODEL
 model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_prompt)
 
-# Setup Chat Memory
+# 7. CHAT MEMORY SETUP
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
 
-# Display previous chat history
+# 8. DISPLAY CHAT HISTORY WITH CUSTOM AVATARS
 for message in st.session_state.chat_session.history:
-    role = "assistant" if message.role == "model" else "user"
-    with st.chat_message(role):
-        st.markdown(message.parts[0].text)
+    if message.role == "model":
+        with st.chat_message("assistant", avatar="🩺"):
+            st.markdown(message.parts[0].text)
+    else:
+        with st.chat_message("user", avatar="👤"):
+            st.markdown(message.parts[0].text)
 
-# Input box for the user
-user_input = st.chat_input("Type your message here...")
+# 9. CHAT INPUT
+user_input = st.chat_input("E.g., My back hurts, what test should I take?")
 
 if user_input:
-    # Show user message
-    with st.chat_message("user"):
+    # Display user prompt
+    with st.chat_message("user", avatar="👤"):
         st.markdown(user_input)
     
-    # Get AI response and show it
-    with st.chat_message("assistant"):
+    # Generate and display AI response
+    with st.chat_message("assistant", avatar="🩺"):
         response = st.session_state.chat_session.send_message(user_input)
         st.markdown(response.text)
