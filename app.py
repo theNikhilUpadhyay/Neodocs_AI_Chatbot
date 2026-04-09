@@ -26,7 +26,7 @@ Your goals:
 Always remind users that you are an AI, not a doctor."""
 
 # Initialize the AI Model
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_prompt)
+model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_prompt)
 
 # Setup Chat Memory
 if "chat_session" not in st.session_state:
